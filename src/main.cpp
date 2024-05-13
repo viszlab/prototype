@@ -30,6 +30,12 @@ Supervisor: Dr. H. (Hamed) Seiied Alavi PhD
 /* PWM frequency for the PCA9685 in Hz */
 #define PWM_FREQUENCY 50
 
+/* Connect the servo's on the PWM ports on the board */
+#define MOTOR_ONE 0
+
+/* Rotation in milliseconds (speed for rotation and 'growing' factor) */
+#define MOVE_TIME 2000
+
 /* Define servo minimum and maximum pulse width in microseconds */
 #define SERVO_MIN_PULSE_WIDTH 0
 #define SERVO_MAX_PULSE_WIDTH 500
@@ -48,7 +54,6 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(PWM_ADDRESS);
 #define PULSE_WIDTH_CLOCKWISE 311        // Slowest rotation for clockwise
 #define PULSE_WIDTH_COUNTERCLOCKWISE 336 // Slowest rotation for counterclockwise
 
-
 /* Set-up function, only runs on start-up */
 void setup()
 {
@@ -62,37 +67,37 @@ void setup()
 }
 
 /* Sets the servo motor pulse width to neutral 'stopping the servo' */
-void stopServo()
+void stopServo(int motorNumber)
 {
-  pwm.setPWM(0, 0, PULSE_WIDTH_NEUTRAL);
+  pwm.setPWM(motorNumber, 0, PULSE_WIDTH_NEUTRAL);
 }
 
 /* Sets the servo motor pulse to move clockwise for 2 seconds 'growing the string' */
-void moveClockwise()
+void moveClockwise(int motorNumber)
 {
   unsigned long startTime = millis(); // Record the start time
-  while (millis() - startTime < 2000)
+  while (millis() - startTime < MOVE_TIME)
   {
-    pwm.setPWM(0, 0, PULSE_WIDTH_CLOCKWISE); // Spin clockwise for 2 seconds
+    pwm.setPWM(motorNumber, 0, PULSE_WIDTH_CLOCKWISE); // Spin clockwise for 2 seconds
   }
-  stopServo(); 
+  stopServo(motorNumber);
 }
 
 /* Sets the servo motor pulse to move counterclockwise for 2 seconds 'shrinking the string' */
-void moveCounterClockwise()
+void moveCounterClockwise(int motorNumber)
 {
   unsigned long startTime = millis(); // Record the start time
-  while (millis() - startTime < 2000)
-  { 
-    pwm.setPWM(0, 0, PULSE_WIDTH_COUNTERCLOCKWISE); // Spin counter clockwise for 2 seconds
+  while (millis() - startTime < MOVE_TIME)
+  {
+    pwm.setPWM(motorNumber, 0, PULSE_WIDTH_COUNTERCLOCKWISE); // Spin counter clockwise for 2 seconds
   }
-  stopServo(); 
+  stopServo(motorNumber);
 }
 
 void loop()
 {
-  moveClockwise();        // Move clockwise for 2 seconds and stop
+  moveClockwise(0);        // Move clockwise for 2 seconds and stop
   delay(1000);            // Delay for 1 second between movements
-  moveCounterClockwise(); // Move counterclockwise for 2 seconds and stop
+  moveCounterClockwise(0); // Move counterclockwise for 2 seconds and stop
   delay(1000);            // Delay for 1 second between movements
 }
