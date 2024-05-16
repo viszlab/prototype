@@ -34,9 +34,6 @@ Supervisor: Dr. H. (Hamed) Seiied Alavi PhD
 #define MOTOR_ONE 0
 #define MOTOR_TWO 1
 
-/* Rotation in milliseconds (speed for rotation and 'growing' factor) */
-#define MOVE_TIME 2000
-
 /* Define servo minimum and maximum pulse width in microseconds */
 #define SERVO_MIN_PULSE_WIDTH 0
 #define SERVO_MAX_PULSE_WIDTH 500
@@ -55,15 +52,15 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(PWM_ADDRESS);
 #define PULSE_WIDTH_CLOCKWISE 305        // Slowest rotation for clockwise
 #define PULSE_WIDTH_COUNTERCLOCKWISE 336 // Slowest rotation for counterclockwise
 
-
 /* Variables to store timer functions */
 unsigned long previousMillis = 0;     // Variable to store the last time the function was called
 const unsigned long interval = 10000; // Interval in milliseconds (10 seconds)
 
 /* Variables to store the CO2 concentration levels*/
-int currentNumber;                     // Global variable to store the current level
-int previousNumber;                    // Global variable to store the previous level
-int differenceNumber;                        // Global variable to store the difference between the current and previous numbers
+int currentNumber;    // Global variable to store the current level
+int previousNumber;   // Global variable to store the previous level
+int differenceNumber; // Global variable to store the difference between the current and previous numbers
+int moveTime;
 
 /* Set-up function, only runs on start-up */
 void setup()
@@ -78,15 +75,17 @@ void setup()
 }
 
 /* Function that generates 'random' CO2 concentration levels each 5 seconds */
-void generateLevels() {
+void generateLevels()
+{
   unsigned long currentMillis = millis(); // Get the current time
 
   if (currentMillis - previousMillis >= interval)
-  {                                      // Check if it's time to generate a new number
+  { // Check if it's time to generate a new number
     previousNumber = currentNumber;
-    currentNumber = random(500, 901); // Generate a random number between 500 and 900
+    currentNumber = random(500, 901);                  // Generate a random number between 500 and 900
     differenceNumber = currentNumber - previousNumber; // Calculate the difference between current and previous numbers
-    previousMillis = currentMillis;      // Save the current time for the next iteration
+    previousMillis = currentMillis;                    // Save the current time for the next iteration
+    moveTime = abs(differenceNumber);
   }
 }
 
@@ -100,7 +99,7 @@ void stopServo(int motorNumber)
 void moveClockwise(int motorNumber)
 {
   unsigned long startTime = millis(); // Record the start time
-  while (millis() - startTime < MOVE_TIME)
+  while (millis() - startTime < moveTime * 15) // Add multiplication for move time
   {
     pwm.setPWM(motorNumber, 0, PULSE_WIDTH_CLOCKWISE); // Spin clockwise for 2 seconds
   }
@@ -111,7 +110,7 @@ void moveClockwise(int motorNumber)
 void moveCounterClockwise(int motorNumber)
 {
   unsigned long startTime = millis(); // Record the start time
-  while (millis() - startTime < MOVE_TIME)
+  while (millis() - startTime < moveTime * 15) // Add multiplication for move time
   {
     pwm.setPWM(motorNumber, 0, PULSE_WIDTH_COUNTERCLOCKWISE); // Spin counter clockwise for 2 seconds
   }
@@ -127,11 +126,17 @@ void loop()
   Serial.println(currentNumber);
   Serial.print("Difference: ");
   Serial.println(differenceNumber);
+  Serial.print("Move: ");
+  Serial.println(moveTime);
+  delay(10000);
 
-  if (differenceNumber > 0) {
+  if (differenceNumber > 0)
+  {
     moveClockwise(0); // Move clockwise for 2 seconds and stop
     delay(1000);
-  } else {
+  }
+  else
+  {
     moveCounterClockwise(0); // Move counterclockwise for 2 seconds and stop
     delay(1000);
   }
