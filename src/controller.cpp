@@ -32,6 +32,7 @@ Supervisor: Dr. H. (Hamed) Seiied Alavi PhD
 
 /* Connect the servo's on the PWM ports on the board */
 #define MOTOR_ONE 0
+#define MOTOR_TWO 1
 
 /* Rotation in milliseconds (speed for rotation and 'growing' factor) */
 #define MOVE_TIME 2000
@@ -51,8 +52,18 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(PWM_ADDRESS);
  */
 
 #define PULSE_WIDTH_NEUTRAL 325          // Neutral position 'Stops the servo motor'
-#define PULSE_WIDTH_CLOCKWISE 311        // Slowest rotation for clockwise
+#define PULSE_WIDTH_CLOCKWISE 305        // Slowest rotation for clockwise
 #define PULSE_WIDTH_COUNTERCLOCKWISE 336 // Slowest rotation for counterclockwise
+
+
+/* Variables to store timer functions */
+unsigned long previousMillis = 0;     // Variable to store the last time the function was called
+const unsigned long interval = 10000; // Interval in milliseconds (10 seconds)
+
+/* Variables to store the CO2 concentration levels*/
+int currentNumber;                     // Global variable to store the current level
+int previousNumber;                    // Global variable to store the previous level
+int differenceNumber;                        // Global variable to store the difference between the current and previous numbers
 
 /* Set-up function, only runs on start-up */
 void setup()
@@ -64,6 +75,19 @@ void setup()
   /* Initialize PWM driver on the specified frequency */
   pwm.begin();
   pwm.setPWMFreq(PWM_FREQUENCY);
+}
+
+/* Function that generates 'random' CO2 concentration levels each 5 seconds */
+void generateLevels() {
+  unsigned long currentMillis = millis(); // Get the current time
+
+  if (currentMillis - previousMillis >= interval)
+  {                                      // Check if it's time to generate a new number
+    previousNumber = currentNumber;
+    currentNumber = random(500, 901); // Generate a random number between 500 and 900
+    differenceNumber = currentNumber - previousNumber; // Calculate the difference between current and previous numbers
+    previousMillis = currentMillis;      // Save the current time for the next iteration
+  }
 }
 
 /* Sets the servo motor pulse width to neutral 'stopping the servo' */
@@ -96,8 +120,19 @@ void moveCounterClockwise(int motorNumber)
 
 void loop()
 {
-  moveClockwise(0);        // Move clockwise for 2 seconds and stop
-  delay(1000);            // Delay for 1 second between movements
-  moveCounterClockwise(0); // Move counterclockwise for 2 seconds and stop
-  delay(1000);            // Delay for 1 second between movements
+  generateLevels();
+  Serial.print("Previous: ");
+  Serial.println(previousNumber);
+  Serial.print("Current: ");
+  Serial.println(currentNumber);
+  Serial.print("Difference: ");
+  Serial.println(differenceNumber);
+
+  if (differenceNumber > 0) {
+    moveClockwise(0); // Move clockwise for 2 seconds and stop
+    delay(1000);
+  } else {
+    moveCounterClockwise(0); // Move counterclockwise for 2 seconds and stop
+    delay(1000);
+  }
 }
