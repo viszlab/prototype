@@ -1,7 +1,12 @@
 /*
 
-Bluebird data physicalization proof-of-concept.
-Controls 4 servo motors using a PCA9685 PWM controller.
+Title: Bluebird data physicalization proof-of-concept.
+Description: Controls six 360 degree servo motors rotating clockwise or counterclockwise
+based on simulated CO2 concentrations and movement time between difference of current and previous values.
+
+Hardware: Arduino Uno
+Shield: PCA9685 PWM controller.
+Components: MG90S Servo Motors
 
 ---
 Master: Master Information Studies: Information Systems (track)
@@ -98,7 +103,7 @@ void stopServo(int motorNumber)
 /* Sets the servo motor pulse to move clockwise for 2 seconds 'growing the string' */
 void moveClockwise(int motorNumber)
 {
-  unsigned long startTime = millis(); // Record the start time
+  unsigned long startTime = millis();          // Record the start time
   while (millis() - startTime < moveTime * 15) // Add multiplication for move time
   {
     pwm.setPWM(motorNumber, 0, PULSE_WIDTH_CLOCKWISE); // Spin clockwise for 2 seconds
@@ -109,7 +114,7 @@ void moveClockwise(int motorNumber)
 /* Sets the servo motor pulse to move counterclockwise for 2 seconds 'shrinking the string' */
 void moveCounterClockwise(int motorNumber)
 {
-  unsigned long startTime = millis(); // Record the start time
+  unsigned long startTime = millis();          // Record the start time
   while (millis() - startTime < moveTime * 15) // Add multiplication for move time
   {
     pwm.setPWM(motorNumber, 0, PULSE_WIDTH_COUNTERCLOCKWISE); // Spin counter clockwise for 2 seconds
