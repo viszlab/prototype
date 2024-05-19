@@ -2,6 +2,17 @@
 
 Bluebird is a [hanging kinetic sculpture](https://en.wikipedia.org/wiki/Kinetic_art) inspired by organic natural materials and the shapes of hanging planters with strings that encode the environmental properties of Indoor Air Quality (IAQ) data in the form of a [data physicalization](http://dataphys.org/). It is meant to be hung from the ceiling in small to medium rooms and changes based on real-time air quality monitor data. Strings (plant branches) either become longer or smaller simulating the growth of a plant and the history and predictions of CO2 concentrations. Movements of the leaves indicate the freshness of air for a multi-sensory experience. The overall design philosophy of the shapes and forms uses the notion of calm technology to convey data with [minimal interruption cost](https://calmtech.com/).
 
+## Components
+
+### Controller
+A controller device running on an [Arduino Uno Rev3](https://store.arduino.cc/products/arduino-uno-rev3) microcontroller with a [16-Channel PWM/Servo Shield](https://www.adafruit.com/product/1411) is used to control six [360° MG90S type Micro Servo Motors](https://www.towerpro.com.tw/product/mg90s-3/). Attached to these motors are pulleys with fishing lines simulating the growth of the hanging planter so that the string can be moved up and down.
+
+### Gateway
+A gateway device running on a [NodeMCU](https://www.nodemcu.com/index_en.html) (ESP8266-based) microcontroller through wi-fi [IOTroam](https://www.surf.nl/en/services/iotroam) fetches the [Lab42 building API](https://lab42.uva.nl/) to gather the latest real-time CO2 concentrations through the avaliable in-building sensors and sends them over [UART](https://docs.arduino.cc/learn/communication/uart/) to the controller device moving the servo motors.
+
+### Materials
+The strings, leaves, and housings of the electronics and mechanical hardware are created using [additive manufacturing](https://en.wikipedia.org/wiki/3D_printing) (3D Printing) using a Fused deposition Modeling (FDM) technique using [Polylactic acid](https://en.wikipedia.org/wiki/Polylactic_acid) (PLA) plastic filament in various colors. The electronics enclosures and plant models were modeled using [computer-aided design](https://en.wikipedia.org/wiki/Computer-aided_design) (CAD) software.
+
 ## Installation
 
 1) Install a code editor such as [VSCode](https://vscode.dev/)
