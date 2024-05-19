@@ -1,4 +1,4 @@
-# Bluebird
+# ![Bluebird](docs/bluebird_github_banner.png)
 
 Bluebird is a [hanging kinetic sculpture](https://en.wikipedia.org/wiki/Kinetic_art) inspired by organic natural materials and the shapes of hanging planters with strings that encode the environmental properties of Indoor Air Quality (IAQ) data in the form of a [data physicalization](http://dataphys.org/). It is meant to be hung from the ceiling in small to medium rooms and changes based on real-time air quality monitor data. Strings (plant branches) either become longer or smaller simulating the growth of a plant and the history and predictions of CO2 concentrations. Movements of the leaves indicate the freshness of air for a multi-sensory experience. The overall design philosophy of the shapes and forms uses the notion of calm technology to convey data with [minimal interruption cost](https://calmtech.com/).
 
