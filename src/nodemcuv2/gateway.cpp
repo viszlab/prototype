@@ -29,6 +29,9 @@ Supervisor: Dr. H. (Hamed) Seiied Alavi PhD
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
+/* Establishing the Serial Communication */
+#include <SoftwareSerial.h>
+
 /* Stores the wifi-credentials in .env*/
 #include <config.h>
 
@@ -40,11 +43,11 @@ String currentTime; // Global variable to store the current time
 String accessToken; // Global variable to store the access token
 String endpointRooms;
 
-float co2Concentration = 0;
+extern float co2Concentration = 0;
 
-    /* Function to send login request */
-    void
-    sendLoginRequest()
+
+/* Function to send login request */
+void sendLoginRequest()
 {
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -102,6 +105,9 @@ void setup()
   delay(5000);
   Serial.begin(115200);
 
+  /* Serial BAUD rate for Arduino UNO */
+  Serial1.begin(9600); // Serial1 for communication with Arduino Uno (TX and RX pins)
+
   Serial.println();
   Serial.println("--- Start of set-up ---");
 
@@ -153,8 +159,8 @@ void getCurrentTime()
   struct tm *ti;
   ti = localtime(&rawTime);
 
-  // Subtract 2 hours because the API formatting is a bit weird?
-  ti->tm_hour -= 2;
+  // Subtract 6 hours because the API formatting is a bit weird?
+  ti->tm_hour -= 6;
   if (ti->tm_hour < 0)
   {
     // If the resulting hour is negative, adjust the date
@@ -249,6 +255,10 @@ void loop()
 
   Serial.println("CO2 concentrations: ");
   Serial.println(co2Concentration);
+
+  /* Send CO2 concentrations over softserial to Arduino */
+  Serial1.print("CO2 concentration: ");
+  Serial1.println(co2Concentration);
 
   Serial.println("--- End of polling (5s intervals) ---");
 

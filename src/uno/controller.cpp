@@ -71,6 +71,10 @@ int previousNumber;   // Global variable to store the previous level
 int differenceNumber; // Global variable to store the difference between the current and previous numbers
 int moveTime;
 
+/* String of UART communication*/
+String receivedData = "";
+float co2Concentration = 0.0;
+
 /* Set-up function, only runs on start-up */
 void setup()
 {
@@ -126,8 +130,35 @@ void moveCounterClockwise(int motorNumber)
   stopServo(motorNumber);
 }
 
+void parseCO2Concentration(String data)
+{
+  int index = data.indexOf("CO2 concentration: ");
+  if (index >= 0)
+  {
+    String co2String = data.substring(index + 19); // 19 is the length of "CO2 concentration: "
+    co2Concentration = co2String.toFloat();
+    Serial.print("Stored CO2 concentration: ");
+    Serial.println(co2Concentration);
+  }
+  else
+  {
+    Serial.println("CO2 concentration not found in the received data.");
+  }
+}                                                                                                                                                                                                                                                             
+
 void loop()
 {
+
+  if (Serial.available() > 0)
+  {
+    receivedData = Serial.readStringUntil('\n');
+    Serial.print("Received: ");
+    Serial.println(receivedData);
+
+    // Extract CO2 concentration from received data
+    parseCO2Concentration(receivedData);
+  }
+
   generateLevels();
   Serial.print("Previous: ");
   Serial.println(previousNumber);
