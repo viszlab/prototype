@@ -38,9 +38,13 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600, 60000);
 
 String currentTime; // Global variable to store the current time
 String accessToken; // Global variable to store the access token
+String endpointRooms;
 
-/* Function to send login request */
-void sendLoginRequest()
+float co2Concentration = 0;
+
+    /* Function to send login request */
+    void
+    sendLoginRequest()
 {
   if (WiFi.status() == WL_CONNECTED)
   {
@@ -63,6 +67,20 @@ void sendLoginRequest()
       String response = http.getString();
       Serial.println("HTTP Response code: " + String(httpResponseCode));
       Serial.println("Response: " + response);
+
+      // Parse the response to extract the access token
+      StaticJsonDocument<200> responseDoc;
+      DeserializationError error = deserializeJson(responseDoc, response);
+
+      if (!error)
+      {
+        accessToken = responseDoc["access_token"].as<String>();
+        Serial.println("Access Token: " + accessToken);
+      }
+      else
+      {
+        Serial.println("Failed to parse the access token from response");
+      }
     }
     else
     {
@@ -85,6 +103,9 @@ void setup()
   Serial.begin(115200);
 
   Serial.println();
+  Serial.println("--- Start of set-up ---");
+
+  Serial.println();
   Serial.println("Starting Wi-Fi connection...");
 
   Serial.print("Connecting to: ");
@@ -96,7 +117,7 @@ void setup()
   unsigned long startAttemptTime = millis();
 
   /* Keep attempting to connect until timeout */
-  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 20000)
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 30000)
   {
     Serial.print(".");
     delay(500);
@@ -120,6 +141,8 @@ void setup()
     Serial.println(WiFi.status());
     Serial.println("Failed to connect to Wi-Fi.");
   }
+
+  Serial.println("--- End of set-up ---");
 }
 
 void getCurrentTime()
@@ -129,9 +152,40 @@ void getCurrentTime()
   time_t rawTime = epochTime;
   struct tm *ti;
   ti = localtime(&rawTime);
+
+  // Subtract 2 hours because the API formatting is a bit weird?
+  ti->tm_hour -= 2;
+  if (ti->tm_hour < 0)
+  {
+    // If the resulting hour is negative, adjust the date
+    ti->tm_mday--;     // Move to the previous day
+    ti->tm_hour += 24; // Add 24 hours
+  }
+
+  // Set seconds to 00 before formatting time string since this is what the API supports
+  ti->tm_sec = 0;
+
   char buffer[30];
   sprintf(buffer, "%02d-%02d-%02d %02d:%02d:%02d", ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday, ti->tm_hour, ti->tm_min, ti->tm_sec);
   currentTime = String(buffer);
+  endpointRooms = String(API_ENDPOINT) + String(ROOM_ID) + "/data?startTime=" + String{currentTime} + "&endTime=" + String{currentTime};
+}
+
+String encodeURL(const String &url)
+{
+  String encodedURL = "";
+  for (int i = 0; i < url.length(); i++)
+  {
+    if (url[i] == ' ')
+    {
+      encodedURL += "%20";
+    }
+    else
+    {
+      encodedURL += url[i];
+    }
+  }
+  return encodedURL;
 }
 
 void sendRequest(const String &endpoint)
@@ -140,9 +194,14 @@ void sendRequest(const String &endpoint)
   {
     HTTPClient http;
 
-    http.begin(wifiClient, endpoint);
+    String encodedEndpoint = encodeURL(endpoint);
+    http.begin(wifiClient, encodedEndpoint);
+
     http.addHeader("Content-Type", "application/json");
     http.addHeader("Authorization", "Bearer " + accessToken);
+
+    Serial.println("Access Token: " + accessToken);
+    Serial.println("Sending GET request to: " + encodedEndpoint);
 
     int httpResponseCode = http.GET();
 
@@ -151,6 +210,20 @@ void sendRequest(const String &endpoint)
       String response = http.getString();
       Serial.println("HTTP Response code: " + String(httpResponseCode));
       Serial.println("Response: " + response);
+
+      // Parse JSON response
+      DynamicJsonDocument jsonDoc(1024); // Set the JSON document size according to your response size
+      DeserializationError error = deserializeJson(jsonDoc, response);
+
+      if (!error)
+      {
+        // Extract CO2 concentration from response and round it to the nearest whole value
+        co2Concentration = round(jsonDoc["results"][0]["airquality"].as<float>());
+      }
+      else
+      {
+        Serial.println("Failed to parse JSON response");
+      }
     }
     else
     {
@@ -165,10 +238,19 @@ void sendRequest(const String &endpoint)
 /* Fetches the sensor withing the API room */
 void loop()
 {
+
+  Serial.println("--- Start of polling (5s intervals) ---");
+
   getCurrentTime();
   Serial.println("Current Time: " + currentTime);
 
-  sendRequest(String(API_ENDPOINT) + String(ROOM_ID) + "/data?startTime=" + String(currentTime) + "&endTime=" + String(currentTime)); 
+  Serial.println("API Endpoint: " + endpointRooms);
+  sendRequest(endpointRooms);
+
+  Serial.println("CO2 concentrations: ");
+  Serial.println(co2Concentration);
+
+  Serial.println("--- End of polling (5s intervals) ---");
 
   delay(5000);
 }
