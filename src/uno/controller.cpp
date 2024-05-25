@@ -38,6 +38,10 @@ Supervisor: Dr. H. (Hamed) Seiied Alavi PhD
 /* Connect the servo's on the PWM ports on the board */
 #define MOTOR_ONE 0
 #define MOTOR_TWO 1
+#define MOTOR_THREE 2
+#define MOTOR_FOUR 3
+#define MOTOR_FIVE 4
+#define MOTOR_SIX 5
 
 /* Define servo minimum and maximum pulse width in microseconds */
 #define SERVO_MIN_PULSE_WIDTH 0
@@ -137,12 +141,22 @@ void loop()
 
   if (differenceNumber > 0)
   {
-    moveClockwise(0); // Move clockwise for 2 seconds and stop
+    moveClockwise(MOTOR_ONE); 
+    moveClockwise(MOTOR_TWO); 
+    moveClockwise(MOTOR_THREE); 
+    moveClockwise(MOTOR_FOUR); 
+    moveClockwise(MOTOR_FIVE);
+    moveClockwise(MOTOR_SIX);
     delay(1000);
   }
   else
   {
-    moveCounterClockwise(0); // Move counterclockwise for 2 seconds and stop
+    moveCounterClockwise(MOTOR_ONE); 
+    moveCounterClockwise(MOTOR_TWO); 
+    moveCounterClockwise(MOTOR_THREE); 
+    moveCounterClockwise(MOTOR_FOUR);
+    moveCounterClockwise(MOTOR_FIVE);
+    moveCounterClockwise(MOTOR_SIX);
     delay(1000);
   }
 }

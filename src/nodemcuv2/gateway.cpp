@@ -25,18 +25,58 @@ Supervisor: Dr. H. (Hamed) Seiied Alavi PhD
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
 
+/* NTP libraries for getting the curent time */
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
 /* Stores the wifi-credentials in .env*/
 #include <config.h>
 
-/* Coordinates for Amsterdam */
-const char *latitude = "52.3676";
-const char *longitude = "4.9041";
-
-/* OpenWeatherMap API endpoint build up string */
-String apiEndpoint = "http://api.openweathermap.org/data/2.5/weather?lat=" + String(latitude) + "&lon=" + String(longitude) + "&appid=" + String(API_KEY) + "&units=metric";
-
 WiFiClient wifiClient;
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", 3600, 60000);
 
+String currentTime; // Global variable to store the current time
+String accessToken; // Global variable to store the access token
+
+/* Function to send login request */
+void sendLoginRequest()
+{
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    HTTPClient http;
+
+    http.begin(wifiClient, API_URL);
+    http.addHeader("Content-Type", "application/json");
+
+    StaticJsonDocument<200> jsonDoc;
+    jsonDoc["username"] = API_USERNAME;
+    jsonDoc["password"] = API_PASSWORD;
+
+    String requestBody;
+    serializeJson(jsonDoc, requestBody);
+
+    int httpResponseCode = http.POST(requestBody);
+
+    if (httpResponseCode > 0)
+    {
+      String response = http.getString();
+      Serial.println("HTTP Response code: " + String(httpResponseCode));
+      Serial.println("Response: " + response);
+    }
+    else
+    {
+      Serial.println("Error in sending POST request");
+      Serial.println("HTTP Response code: " + String(httpResponseCode));
+    }
+
+    http.end();
+  }
+  else
+  {
+    Serial.println("Wi-Fi not connected");
+  }
+}
 
 /* Set-up of the Wi-Fi connection login if succesful and logigng the IP */
 void setup()
@@ -56,7 +96,7 @@ void setup()
   unsigned long startAttemptTime = millis();
 
   /* Keep attempting to connect until timeout */
-  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000)
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 20000)
   {
     Serial.print(".");
     delay(500);
@@ -67,6 +107,12 @@ void setup()
     Serial.println("Connected to Wi-Fi!");
     Serial.print("IP Address: ");
     Serial.println(WiFi.localIP());
+
+    /* Initialize NTP client */
+    timeClient.begin();
+
+    /* Call the function to authenticate */
+    sendLoginRequest();
   }
   else
   {
@@ -76,56 +122,53 @@ void setup()
   }
 }
 
-/* Fetches weather data for specified city, converts the json and stores in variables*/
-void fetchWeatherData()
+void getCurrentTime()
 {
-  HTTPClient http;
-  http.begin(wifiClient, apiEndpoint);
-
-  int httpCode = http.GET();
-  if (httpCode > 0)
-  {
-    if (httpCode == HTTP_CODE_OK)
-    {
-      String payload = http.getString();
-      Serial.println(payload);
-
-      // Parse JSON
-      DynamicJsonDocument doc(1024);
-      DeserializationError error = deserializeJson(doc, payload);
-      if (!error)
-      {
-        float temperature = doc["main"]["temp"];
-        Serial.print("Temperature in Amsterdam: ");
-        Serial.print(temperature);
-        Serial.println(" °C");
-      }
-      else
-      {
-        Serial.print("Failed to parse JSON: ");
-        Serial.println(error.c_str());
-      }
-    }
-  }
-  else
-  {
-    Serial.print("HTTP GET request failed, error: ");
-    Serial.println(http.errorToString(httpCode).c_str());
-  }
-
-  http.end();
+  timeClient.update();
+  unsigned long epochTime = timeClient.getEpochTime();
+  time_t rawTime = epochTime;
+  struct tm *ti;
+  ti = localtime(&rawTime);
+  char buffer[30];
+  sprintf(buffer, "%02d-%02d-%02d %02d:%02d:%02d", ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday, ti->tm_hour, ti->tm_min, ti->tm_sec);
+  currentTime = String(buffer);
 }
 
-/* Fetches the weather data each 5 second*/
+void sendRequest(const String &endpoint)
+{
+  if (WiFi.status() == WL_CONNECTED && accessToken.length() > 0)
+  {
+    HTTPClient http;
+
+    http.begin(wifiClient, endpoint);
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("Authorization", "Bearer " + accessToken);
+
+    int httpResponseCode = http.GET();
+
+    if (httpResponseCode > 0)
+    {
+      String response = http.getString();
+      Serial.println("HTTP Response code: " + String(httpResponseCode));
+      Serial.println("Response: " + response);
+    }
+    else
+    {
+      Serial.println("Error in sending GET request");
+      Serial.println("HTTP Response code: " + String(httpResponseCode));
+    }
+
+    http.end();
+  }
+}
+
+/* Fetches the sensor withing the API room */
 void loop()
 {
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    fetchWeatherData();
-  }
-  else
-  {
-    Serial.println("Wi-Fi not connected");
-  }
+  getCurrentTime();
+  Serial.println("Current Time: " + currentTime);
+
+  sendRequest(String(API_ENDPOINT) + String(ROOM_ID) + "/data?startTime=" + String(currentTime) + "&endTime=" + String(currentTime)); 
+
   delay(5000);
 }
