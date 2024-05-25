@@ -80,7 +80,7 @@ void setup()
 {
 
   /* Set the data rate (baud) for serial monitor */
-  Serial.begin(9600);
+  Serial.begin(4800);
 
   /* Initialize PWM driver on the specified frequency */
   pwm.begin();
@@ -144,19 +144,16 @@ void parseCO2Concentration(String data)
   {
     Serial.println("CO2 concentration not found in the received data.");
   }
-}                                                                                                                                                                                                                                                             
+}
 
 void loop()
 {
 
   if (Serial.available() > 0)
   {
-    receivedData = Serial.readStringUntil('\n');
+    String receivedData = Serial.readStringUntil('\n');
     Serial.print("Received: ");
     Serial.println(receivedData);
-
-    // Extract CO2 concentration from received data
-    parseCO2Concentration(receivedData);
   }
 
   generateLevels();
@@ -172,19 +169,19 @@ void loop()
 
   if (differenceNumber > 0)
   {
-    moveClockwise(MOTOR_ONE); 
-    moveClockwise(MOTOR_TWO); 
-    moveClockwise(MOTOR_THREE); 
-    moveClockwise(MOTOR_FOUR); 
+    moveClockwise(MOTOR_ONE);
+    moveClockwise(MOTOR_TWO);
+    moveClockwise(MOTOR_THREE);
+    moveClockwise(MOTOR_FOUR);
     moveClockwise(MOTOR_FIVE);
     moveClockwise(MOTOR_SIX);
     delay(1000);
   }
   else
   {
-    moveCounterClockwise(MOTOR_ONE); 
-    moveCounterClockwise(MOTOR_TWO); 
-    moveCounterClockwise(MOTOR_THREE); 
+    moveCounterClockwise(MOTOR_ONE);
+    moveCounterClockwise(MOTOR_TWO);
+    moveCounterClockwise(MOTOR_THREE);
     moveCounterClockwise(MOTOR_FOUR);
     moveCounterClockwise(MOTOR_FIVE);
     moveCounterClockwise(MOTOR_SIX);

@@ -106,7 +106,7 @@ void setup()
   Serial.begin(115200);
 
   /* Serial BAUD rate for Arduino UNO */
-  Serial1.begin(9600); // Serial1 for communication with Arduino Uno (TX and RX pins)
+  Serial1.begin(4800); // Serial1 for communication with Arduino Uno (TX and RX pins)
 
   Serial.println();
   Serial.println("--- Start of set-up ---");
@@ -257,8 +257,7 @@ void loop()
   Serial.println(co2Concentration);
 
   /* Send CO2 concentrations over softserial to Arduino */
-  Serial1.print("CO2 concentration: ");
-  Serial1.println(co2Concentration);
+  Serial1.println("Hello from NodeMCU");
 
   Serial.println("--- End of polling (5s intervals) ---");
 
