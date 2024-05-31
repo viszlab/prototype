@@ -85,7 +85,7 @@ $ git clone git@github.com:viszlab/prototype.git
 | 1x  | **Spool of Greenish color (at least ~270g) of 1.75mm PLA (leaves)** |
 | 1x  | **Spool of Color of Choice (at least ~570g) of 1.75mm PLA (mounting plates)** |
 | 1x  | **Wooden MDF (or other wood type) plate (5mm thickness)** |
-| 5x  | **String or rope in color of choice in ~80cm in length (3~6mm thickness)** |
+| 5x  | **String or rope in color of choice in ~80cm in length (max 5mm thickness)** |
 
 ### Tools
 
@@ -93,6 +93,32 @@ $ git clone git@github.com:viszlab/prototype.git
 |-----|------|
 | 1x  | **Screwdriver with small to large phillips bit** |
 | 1x  | **Soldering Iron preferably with Heat Set Insert tips** |
+
+## Recommended print settings
+
+To increase the strength of the pulleys and mounting plates the following printer slicing settings are recommended:
+
+* Layer Height: **0.24mm**
+* Infill Percentage: **50%**
+* Infill Pattern: **Gyroid**
+* Perimeters: **4**
+* Top Layers: **5**
+* Bottom Layers: **5**
+
+## References
+
+For the basics of working with servo motors this tutorial from _DroneBot Workshop_ was used:
+
+1. DroneBot Workshop. (n.d.). Servo motors with Arduino. Retrieved May 31, 2024, from https://dronebotworkshop.com/servo-motors-with-arduino/
+
+The models of the leaves are based on this seat of Montsera leaves by user _@TriTri_786325_:
+
+2. Printables. (n.d.). 20 Monstera leaf coaster set [Files]. Retrieved May 31, 2024, from https://www.printables.com/model/831698-20-monstera-leaf-coaster-set/files
+
+The printing parameters used for the leaves are based on these settings by user _@Posix_:
+
+3. Printables. (n.d.). Multiuse flexible fabric [Files]. Retrieved May 31, 2024, from https://www.printables.com/model/88579-multiuse-flexible-fabric/files
+
 
 ## Project
 
