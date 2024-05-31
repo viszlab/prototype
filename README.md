@@ -25,9 +25,16 @@ $ git clone git@github.com:viszlab/prototype.git
 4) Create a `config.h` file within the _include_ folder with the WiFi SSID, WiFI Password and Lab42 API credentials.
 
 ```c++
-#define WIFI_SSID "NAME"
+/* Wi-Fi credentials to connect to accesspoint */
+#define WIFI_SSID "SSID"
 #define WIFI_PASSWORD "PASSWORD"
-#define API_KEY "KEY"
+
+/* Lab42 Building API access credentials */
+#define API_URL "URL"
+#define API_ENDPOINT "ENDPOINT"
+#define ROOM_ID "NUMBER"
+#define API_USERNAME "USERNAME"
+#define API_PASSWORD "PASSWORD"
 ```
 5) Build and upload the `controller.cpp` to the Arduino UNO
 6) Build and upload the `gateway.cpp` to the NodeMCU
@@ -41,6 +48,7 @@ $ git clone git@github.com:viszlab/prototype.git
 ```
 ├── .vscode                 # Platform IO configuration build files
 ├── docs                    # Documentation files and images
+├── models                  # .stl files for the 3D models
 ├── include                 # Platform IO include dependencies
 │   └── config.h            # WiFi and API credentials (.env)
 ├── lib                     # Arduino custom libraries
